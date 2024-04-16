@@ -1,17 +1,33 @@
 package entidades;
 
+import excepciones.StockInsuficienteException;
+import excepciones.VidaUtilInsuficienteException;
+import interfaces.Despensable;
 import services.CocinaService;
+import services.DespensaService;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
-public class Chef implements Callable<String> {
+public class Chef  implements Callable{
     private String nombre;
 
     private int estrellasMichelin;
 
-    private CocinaService cocinaService;
+    private Despensa despensa;
 
-//    private services.CocinaService cocinaService;
+    private Receta receta;
+
+    public CocinaService cocinaService = CocinaService.getInstance();
+
+    public Despensa getDespensa() {
+        System.out.println("La despensa del chef ");
+        return despensa;
+    }
+
+    public void setDespensa(Despensa despensa) {
+        this.despensa = despensa;
+    }
 
     public String getNombre() {
         return nombre;
@@ -32,10 +48,11 @@ public class Chef implements Callable<String> {
     public Chef() {
     }
 
-    public Chef(String nombre, int estrellasMichelin, CocinaService cocinaService) {
+    public Chef(String nombre, int estrellasMichelin, Despensa despensa, Receta receta) {
         this.nombre = nombre;
         this.estrellasMichelin = estrellasMichelin;
-        this.cocinaService = cocinaService;
+        this.despensa = despensa;
+        this.receta = receta;
     }
 
     private void toStringChef(){
@@ -43,14 +60,20 @@ public class Chef implements Callable<String> {
     }
 
 
-    @Override
-    public String call() throws Exception {
-        try {
 
+
+    @Override
+    public Void call()  {
+        try{
+            cocinaService.prepararPlatos(receta, despensa,this.nombre);
+        }catch (StockInsuficienteException | VidaUtilInsuficienteException e){
+            e.printStackTrace();
         }
-        return "";
+        return null;
+
     }
 }
+
 
 
 
