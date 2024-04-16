@@ -9,12 +9,16 @@ import services.DespensaService;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public class Chef  {
+public class Chef  implements Callable{
     private String nombre;
 
     private int estrellasMichelin;
 
     private Despensa despensa;
+
+    private Receta receta;
+
+    public CocinaService cocinaService = CocinaService.getInstance();
 
     public Despensa getDespensa() {
         System.out.println("La despensa del chef ");
@@ -44,53 +48,31 @@ public class Chef  {
     public Chef() {
     }
 
-    public Chef(String nombre, int estrellasMichelin, Despensa despensa) {
+    public Chef(String nombre, int estrellasMichelin, Despensa despensa, Receta receta) {
         this.nombre = nombre;
         this.estrellasMichelin = estrellasMichelin;
         this.despensa = despensa;
+        this.receta = receta;
     }
 
     private void toStringChef(){
         System.out.println(" El Chef" + nombre + " posee " +estrellasMichelin+ " estrellas Michelin ");
     }
 
-    public String prepararPlatos(Receta receta) throws StockInsuficienteException, VidaUtilInsuficienteException {
-        List<Despensable> ingredientes = receta.getIngredientes();
-        List<Despensable> utensilios = receta.getUtensilios();
-        boolean sePuedePreparar = true;
 
-        DespensaService despensaService = new DespensaService(despensa);
-//        DespensaService despensaService = DespensaService.getInstance(despensa);
 
-        if (!despensaService.verificarStock(ingredientes)) {
-            sePuedePreparar = false;
+
+    @Override
+    public Void call()  {
+        try{
+            cocinaService.prepararPlatos(receta, despensa,this.nombre);
+        }catch (StockInsuficienteException | VidaUtilInsuficienteException e){
+            e.printStackTrace();
         }
-        if (!despensaService.verificarVidaUtil(utensilios)) {
-            sePuedePreparar = false;
-        }
-
-        for (Despensable ingrediente : ingredientes) {
-            despensa.sacar(ingrediente.getNombre(), ingrediente.getCantidadDisponible());
-
-        }
-
-        for (Despensable utensilio : utensilios) {
-            despensa.sacar(utensilio.getNombre(), utensilio.getCantidadDisponible());
-        }
-
-        if (sePuedePreparar) {
-            return "El Chef "   + " ha preparado exitosamente la receta: " + receta.getClass().getSimpleName();
-        } else {
-            return "No se pudo preparar la receta: " + receta.getClass().getSimpleName();
-        }
-
+        return null;
 
     }
-
-
-
-
-    }
+}
 
 
 
